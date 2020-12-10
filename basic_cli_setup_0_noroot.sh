@@ -4,6 +4,7 @@ VIMRC="./reqs/.vimrc"
 P10KRC="./reqs/.p10k.zsh"
 
 mkdir $HOME/bin
+# TODO : install git (not preinstalled on most arch isos)
 # download zsh
 curl
 "https://sourceforge.net/projects/zsh/files/zsh/latest/dowwnload"
@@ -30,7 +31,7 @@ sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/too
 rm $HOME/.zshrc ; cp $(ZSHRC) $HOME/.zshrc ; source $HOME/.zshrc
 # autosuggestions
 git clone https://github.com/zsh-users/zsh-autosuggestions
-${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
+${ZSH_CUSTOM:-$HO$HOMEE/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
 # POWERLEVEL10K theme
 git clone --depth=1 https://github.com/romkatv/powerlevel10k.git
 ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k
@@ -38,4 +39,21 @@ ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k
 cp $(P10KRC) $HOME/.p10k.zsh
 
 source $HOME/.zshrc
-
+#--------------------------------------
+# vim setup
+if ! pacman -Qi vim > /dev/null ; then
+	# install vim
+	git clone https://github.com/vim/vim.git
+	cd vim
+	[ ! -d "$HOME/.local"  ] && mkdir -p "$HOME/.local"
+	./configure --prefix=$HOME/.local && make && make install
+	export PATH=$PATH:$HOME/.local/bin
+fi
+# install vundle
+git clone https://github.com/VundleVim/Vundle.vim.git $HOME/.vim/bundle/Vundle.vim
+# copy vim config
+cp $(VIMRC) $HOME/.vimrc
+# TODO get plugin dependencies ; clean up vimrc
+# install plugins
+vim +PlugInstall -c q # <- installs plugins then quits vim
+#--------------------------------------
