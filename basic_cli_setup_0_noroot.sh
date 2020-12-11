@@ -1,42 +1,48 @@
 #!/usr/bin/bash
+THIS_REPO="https://github.com/ctdove/arch-setup-script.git"
 
 ZSHRC="./reqs/.zshrc"
 VIMRC="./reqs/.vimrc"
 P10KRC="./reqs/.p10k.zsh"
 
 mkdir $HOME/bin
-#**install git**
-# gets latest version link
-git_ver=$(basename \
-	$(curl -s -N https://mirrors.edge.kernel.org/pub/software/scm/git/ | \
- 		grep "<a href=" | \
- 		sed -n -e "s/^.*href=\"//p" | \
- 		sed -n -e "s/\">.*//p" | \
- 		grep -E -v "./*(man|html|core)" | \
-		tail -n2 | head -n1) \
-	.tar.xz)
 
-# download lastest version
-curl "https://mirrors.edge.kernel.org/pub/software/scm/git/${git_ver}" \
-	--output $HOME/${git_ver}.tar.xz
-tar -xf ${git_ver}.tar.xz ; rm ${git_ver}.tar.xz ; cd ${git_ver} 
-make configure
-./configure --prefix=$HOME/local
-make ; make install
+if ! pacman -Qi git > /dev/null ; then
+	#**install git**
+	# gets latest version link
+	git_ver=$(basename \
+		$(curl -s -N https://mirrors.edge.kernel.org/pub/software/scm/git/ | \
+	 		grep "<a href=" | \
+	 		sed -n -e "s/^.*href=\"//p" | \
+	 		sed -n -e "s/\">.*//p" | \
+	 		grep -E -v "./*(man|html|core)" | \
+			tail -n2 | head -n1) \
+		.tar.xz)
+	
+	# download lastest version
+	curl "https://mirrors.edge.kernel.org/pub/software/scm/git/${git_ver}" \
+		--output $HOME/${git_ver}.tar.xz
+	tar -xf ${git_ver}.tar.xz ; rm ${git_ver}.tar.xz ; cd ${git_ver} 
+	make configure
+	./configure --prefix=$HOME/local
+	make ; make install
 
-# TODO : install git (not preinstalled on most arch isos)
-# download zsh
-curl \
-	"https://sourceforge.net/projects/zsh/files/zsh/latest/dowwnload" \
-	--output "$HOME/zsh.tar.xz"
-tar -xf "$HOME/zsh.tar.xz" ; rm "$HOME/zsh.tar.xz" 
-# build zsh
-cd $HOME/zsh
-./configure --prefix="$HOME/local" \
-	    CPPFLAGS="-I$HOME/local/include" \
-			    LDFLAGS="-L$HOME/local/lib"
-make -j && make install
+	git clone $THIS_REPO ; cd arch-setup-script
+fi
 
+if ! pacman -Qi zsh > /dev/null ; then
+	# download zsh
+	curl \
+		"https://sourceforge.net/projects/zsh/files/zsh/latest/dowwnload" \
+		--output "$HOME/zsh.tar.xz"
+	tar -xf "$HOME/zsh.tar.xz" ; rm "$HOME/zsh.tar.xz" 
+	# build zsh
+	cd $HOME/zsh
+	./configure --prefix="$HOME/local" \
+		    CPPFLAGS="-I$HOME/local/include" \
+				    LDFLAGS="-L$HOME/local/lib"
+	make -j && make install
+fi
 # change default shell to zsh
 echo "
 export PATH=$HOME/local/bin:$PATH
